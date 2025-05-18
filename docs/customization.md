@@ -66,6 +66,12 @@ Create new snakes in the snakes directory with the same structure as random_snak
 python train.py --opponents hungry_snake
 ```
 
+You can also train against one of your models by running:
+
+```bash
+python train.py --opponents path/to/your/model
+```
+
 ## 🛠️ 3. Training Hyperparameters in your training script
 
 These affect how your snake learns during training:
