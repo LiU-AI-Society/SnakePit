@@ -79,6 +79,71 @@ def plot_death_reasons(death_reasons, save_dir=None, show_plot=True):
     if show_plot:
         plt.show()
 
+def plot_hyperparameters_and_rewards(run_dir):
+    """Create a table visualization of training hyperparameters and rewards"""
+    from train import (TOTAL_TIMESTEPS, SAVE_INTERVAL, N_STEPS_COLLECT, 
+                      PPO_BATCH_SIZE, N_EPOCHS_PPO, LR, GAMMA, GAE_LAMBDA, 
+                      PPO_CLIP, MAP_SIZE)
+    from Gym.rewards import SimpleRewards
+
+    # Create figure
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(111)
+    ax.axis('off')
+
+    # Get rewards
+    rewards = SimpleRewards().reward_dict
+
+    # Organize configuration in sections
+    config = {
+        "Training Parameters": {
+            "Total Timesteps": f"{TOTAL_TIMESTEPS:,}",
+            "Save Interval": SAVE_INTERVAL,
+            "Steps per Collection": N_STEPS_COLLECT,
+            "Map Size": f"{MAP_SIZE[0]}x{MAP_SIZE[1]}"
+        },
+        "PPO Parameters": {
+            "Batch Size": PPO_BATCH_SIZE,
+            "Number of Epochs": N_EPOCHS_PPO,
+            "Learning Rate": f"{LR:.0e}",
+            "Gamma (Discount)": GAMMA,
+            "GAE Lambda": GAE_LAMBDA,
+            "PPO Clip": PPO_CLIP
+        },
+        "Reward Structure": {
+            k: f"{v:+.2f}" for k, v in sorted(rewards.items())
+        }
+    }
+
+    # Format as a table string
+    table_text = "Training Configuration\n" + "="*22 + "\n\n"
+    
+    for category, params in config.items():
+        table_text += f"{category}\n" + "-"*len(category) + "\n"
+        max_key_length = max(len(key) for key in params.keys())
+        for key, value in params.items():
+            table_text += f"{key:<{max_key_length}} : {value}\n"
+        table_text += "\n"
+
+    # Add text with styling
+    ax.text(0.05, 0.95, table_text,
+            fontfamily='monospace',
+            fontsize=11,
+            verticalalignment='top',
+            bbox=dict(
+                facecolor='white',
+                edgecolor='gray',
+                alpha=0.9,
+                pad=10,
+                boxstyle='round'
+            ))
+
+    # Save configuration table
+    fig.savefig(f"{run_dir}/training_config.png", 
+                bbox_inches='tight',
+                dpi=150)
+    plt.close(fig)
+
 def log_and_plot_training(
     episode_rewards,
     episode_lengths,
@@ -89,9 +154,24 @@ def log_and_plot_training(
     ma_window=100,
     snake_names=None      # <-- new param
 ):
+    # Plot configuration first
+    
     import matplotlib.pyplot as plt
     import datetime
-    fig, axs = plt.subplots(4, 1, figsize=(12, 18), constrained_layout=True)
+    
+    # Create figure with GridSpec to add reward dict
+    fig = plt.figure(figsize=(15, 20))
+    gs = plt.GridSpec(5, 1, height_ratios=[3, 3, 3, 3, 2], figure=fig)
+
+    # First 4 subplots remain the same (using gs instead of subplots)
+    axs = []
+    for i in range(4):
+        axs.append(fig.add_subplot(gs[i]))
+
+    # Add reward dictionary as text panel
+    ax_rewards = fig.add_subplot(gs[4])
+    ax_rewards.axis('off')
+
     x = np.arange(len(episode_rewards))
 
     # Rewards (taller)
@@ -191,7 +271,7 @@ def log_and_plot_training(
     fig.suptitle(f"Training Stats: {run_dir} | Started: {time_str}", fontsize=16)
 
     plt.tight_layout(rect=[0, 0, 1, 0.97])
-    plt.savefig(f"{run_dir}/training_stats.png")
+    plt.savefig(f"{run_dir}/training_stats.png", bbox_inches='tight')
     if show_plot:
         plt.show()
     plt.close(fig)

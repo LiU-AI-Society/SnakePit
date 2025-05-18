@@ -15,7 +15,8 @@ from ppo import PPOAgent, PPOMemory, ActorCritic  # from your PPO module
 from utils import get_next_run_dir, game_state_to_observation, load_opponent_modules, get_valid_actions
 from utils import moving_average, plot_training_stats_live, plot_death_reasons, battle_snake_game_state_to_observation, game_state_to_matrix
 from heuristic import heuristic
-from utils import log_and_plot_training, determine_winner  # <-- import the new function
+from utils import log_and_plot_training, determine_winner, plot_hyperparameters_and_rewards  # <-- import the new function
+from Gym.rewards import SimpleRewards
 
 
 # ---- Config ----
@@ -77,6 +78,9 @@ def train(
     if pretrained:
         agent.load_model(pretrained)
         agent.save_model(f"{run_dir}/init.pt")
+
+    plot_hyperparameters_and_rewards(run_dir)
+
 
     memory = PPOMemory(batch_size=N_STEPS_COLLECT)
 
@@ -250,8 +254,11 @@ def train(
 
                 if episode_num % plot_every == 0:
                     log_and_plot_training(
-                        episode_rewards, episode_lengths, death_reasons,
-                        episode_wins_all, run_dir,
+                        episode_rewards, 
+                        episode_lengths, 
+                        death_reasons,
+                        episode_wins_all, 
+                        run_dir,
                         show_plot=False,
                         snake_names=snake_names
                     )
