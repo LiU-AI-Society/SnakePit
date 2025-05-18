@@ -6,7 +6,6 @@ Welcome to the **Snake Pit** — a fun and educational event where you train you
 This project uses a custom Battlesnake Gym environment and supports PPO. It's built for students and ML enthusiasts to compete by evolving their snakes using machine learning.
 
 ---
-![Environment Visualization](docs/images/snakes.gif)
 
 
 
