@@ -309,6 +309,8 @@ def render_info_lines(game_state, game_idx, num_games, fname, turn_idx, num_turn
 def init_visualization(map_size, fps=10, mute=False):
     """Initialize pygame, mixer, screen, and clock for training visualization."""
     pygame.init()
+    # Enable key repeat so holding arrow keys registers multiple events
+    pygame.key.set_repeat(200, 50)
     init_sound(mute=mute)
     reset_sound_state_tracker() # Reset tracker for new training visualization
     screen = pygame.display.set_mode((map_size[1] * CELL_SIZE, map_size[0] * CELL_SIZE))
@@ -329,8 +331,31 @@ def visualize_step(game_state_json, snake_colors, screen, clock, fps=10, mute=Fa
 
 
 def close_visualization():
-    """Quit pygame after training visualization."""
     pygame.quit()
+
+def wait_for_debug_input_pygame(screen, clock, fps=10):
+    """
+    Waits for RIGHT ARROW key press to continue, or Q to quit.
+    Keeps the pygame window responsive.
+    Returns:
+        bool: True to continue training, False to quit.
+    """
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    waiting = False
+                elif event.key == pygame.K_q:
+                    return False
+        if screen:
+            pygame.display.flip()
+        if clock:
+            clock.tick(fps)
+    return True
 
 def main():
     pygame.init()

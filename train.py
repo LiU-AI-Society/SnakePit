@@ -10,7 +10,7 @@ from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
 
 from Gym.snake_gym import BattlesnakeGym
-from visualize import init_visualization, visualize_step, close_visualization, reset_sound_state_tracker, SNAKE_COLORS
+from visualize import init_visualization, visualize_step, close_visualization, reset_sound_state_tracker, SNAKE_COLORS, wait_for_debug_input_pygame
 from ppo import PPOAgent, PPOMemory, ActorCritic  # from your PPO module
 from utils import get_next_run_dir, game_state_to_observation, load_opponent_modules, get_valid_actions
 from utils import moving_average, plot_training_stats_live, plot_death_reasons, battle_snake_game_state_to_observation, game_state_to_matrix
@@ -47,9 +47,12 @@ def train(
     our_snake_name="Our snake",
     continue_when_dead=False,  # <-- new flag
     mute=False,               # <-- new flag
+    debug_mode=False,         # <-- debug mode flag
 ):
     run_dir = get_next_run_dir()
     os.makedirs(run_dir, exist_ok=True)
+    if debug_mode:
+        visualize = True
 
     # Load opponents and names
     opponents = load_opponent_modules(opponent_names) # This now returns list of dicts with 'name'
@@ -103,14 +106,46 @@ def train(
     episode_reward, episode_len = 0, 0
     total_steps, episode_num = 0, 0
     json_obj = env.get_json()
+    quit_training_flag = False
 
-    while total_steps < TOTAL_TIMESTEPS:
+    while total_steps < TOTAL_TIMESTEPS and not quit_training_flag:
         for step in range(N_STEPS_COLLECT):
             # Handle pygame
             if visualize:
                 for ev in pygame.event.get():
                     if ev.type == pygame.QUIT:
                         visualize = False
+
+            # Debug mode pause before action selection
+            if debug_mode and not quit_training_flag:
+                # Separator for clarity
+                print("\n" + "=" * 60)
+                print(f"DEBUG STEP | Episode: {episode_num} | BatchStep: {step} | TotalSteps: {total_steps}")
+                print("-" * 60)
+                # Visualize current state
+                visualize_step(json_obj, snake_colors, screen, clock, fps=10, mute=mute)
+                # Heuristic analysis
+                h_valid, h_moves, h_mask = heuristic(observation)
+                print("Heuristic Analysis:")
+                print(f"  Valid Moves: {h_valid}")
+                print(f"  Mask Blocks (True=blocked): {h_mask.tolist()}")
+                # Game rules valid actions
+                gr_valid = get_valid_actions(json_obj['board'], YOUR_SNAKE_INDEX)
+                print("Game Rules Valid Actions:")
+                print(f"  {gr_valid}")
+                # Agent policy probabilities
+                with torch.no_grad():
+                    logits, _ = agent.actor_critic(obs_tensor.to(agent.device))
+                    probs = torch.softmax(logits, dim=-1).squeeze().cpu().numpy()
+                action_names = ["UP", "DOWN", "LEFT", "RIGHT"]
+                probs_str = ", ".join(f"{action_names[i]}={p:.3f}" for i, p in enumerate(probs))
+                print(f"Agent Policy Probabilities: {probs_str}")
+                print("=" * 60)
+                # Wait for user to continue or quit
+                cont = wait_for_debug_input_pygame(screen, clock, fps=10)
+                if not cont:
+                    quit_training_flag = True
+                    break
 
             current_snake_obj = env.snakes.get_snakes()[YOUR_SNAKE_INDEX]
             action_mask = None
@@ -313,7 +348,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Mute all game sounds during training and visualization."
     )
+    parser.add_argument(
+        "--debug-mode",
+        action="store_true",
+        help="Enable debug mode: pause each step for our snake and print debug info."
+    )
     args = parser.parse_args()
+    
     if torch.cuda.is_available():
         DEVICE = torch.device("cuda")
     elif torch.backends.mps.is_available(): # Correct check for MPS
@@ -333,4 +374,5 @@ if __name__ == "__main__":
         our_snake_name=args.our_snake_name,
         continue_when_dead=args.continue_when_dead,
         mute=args.mute,
+        debug_mode=args.debug_mode,
     )
