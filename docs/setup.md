@@ -27,6 +27,8 @@ This will be the output:
 
 Copy the url in the Forwarding. This is the domain name
 
+## Do not close the terminal window running this command. It has to be active for the server to be running
+
 
 
 
