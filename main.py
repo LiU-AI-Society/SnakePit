@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import typing
-from models import EasyNet
 import time
 import onnxruntime as ort
 import argparse

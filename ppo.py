@@ -16,8 +16,15 @@ from Gym.snake_gym import BattlesnakeGym
 from Gym.snake import Snake # For action definitions
 # --- Actor-Critic Network ---
 class ActorCritic(nn.Module):
-    def __init__(self, input_dims, n_actions): # input_dims is (channels, height, width)
-        super(ActorCritic, self).__init__()
+    def __init__(self, input_dims, n_actions): # input_dims is (channels, height, width) which is (3, 11, 11) for the snake representation
+        """
+        Actor-Critic Network for PPO
+        Args:
+            input_dims (tuple): Dimensions of the input state (channels, height, width)
+            n_actions (int): Number of possible actions
+        """
+        # Initialize the parent class
+        super().__init__()
         self.input_dims = input_dims
         self.n_actions = n_actions
 
@@ -60,7 +67,7 @@ class PPOMemory:
         self.log_probs = []
         self.vals = []
         
-        self.batch_size = batch_size # Not strictly used for PPO batching in this version, but good to have
+        self.batch_size = batch_size # Not strictly used for PPO batching in this version, but good to have, little bit of a remainder from the DQN code
 
     def store_memory(self, state, action, reward, done, log_prob, val):
         self.states.append(state)

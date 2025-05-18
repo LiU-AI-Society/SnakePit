@@ -201,21 +201,18 @@ def draw_board(screen, game_state, snake_colors, mute=False):
 
     for x in range(board_width):
         for y in range(board_height):
-            flip_y = board_height - 1 - y
-            rect = pygame.Rect(x*CELL_SIZE+MARGIN, flip_y*CELL_SIZE+MARGIN, CELL_SIZE-MARGIN*2, CELL_SIZE-MARGIN*2)
+            rect = pygame.Rect(x*CELL_SIZE+MARGIN, y*CELL_SIZE+MARGIN, CELL_SIZE-MARGIN*2, CELL_SIZE-MARGIN*2)
             pygame.draw.rect(screen, (50, 50, 50), rect, 1)
     
     for food in game_state['board']['food']:
-        flip_y = board_height - 1 - food['y']
-        center = (food['x']*CELL_SIZE + CELL_SIZE//2, flip_y*CELL_SIZE + CELL_SIZE//2)
+        center = (food['x']*CELL_SIZE + CELL_SIZE//2, food['y']*CELL_SIZE + CELL_SIZE//2)
         pygame.draw.circle(screen, (0,255,0), center, CELL_SIZE//6)
     
     for idx, snake in enumerate(game_state['board']['snakes']):
         color = snake_colors.get(snake['name'], SNAKE_COLORS[idx % len(SNAKE_COLORS)])
         for i, segment in enumerate(snake['body']):
-            flip_y = board_height - 1 - segment['y']
             if i == 0:
-                head_center = (segment['x'] * CELL_SIZE + CELL_SIZE // 2, flip_y * CELL_SIZE + CELL_SIZE // 2)
+                head_center = (segment['x'] * CELL_SIZE + CELL_SIZE // 2, segment['y'] * CELL_SIZE + CELL_SIZE // 2)
                 if len(snake['body']) > 1:
                     next_seg = snake['body'][1]
                     dx = segment['x'] - next_seg['x']
@@ -251,9 +248,9 @@ def draw_board(screen, game_state, snake_colors, mute=False):
             else:
                 prev_seg = snake['body'][i-1]
                 prev_center = (prev_seg['x'] * CELL_SIZE + CELL_SIZE // 2,
-                               (board_height - 1 - prev_seg['y'])*CELL_SIZE + CELL_SIZE // 2)
+                               prev_seg['y']*CELL_SIZE + CELL_SIZE // 2)
                 curr_center = (segment['x'] * CELL_SIZE + CELL_SIZE // 2,
-                               (board_height - 1 - segment['y'])*CELL_SIZE + CELL_SIZE // 2)
+                               segment['y']*CELL_SIZE + CELL_SIZE // 2)
                 thickness = CELL_SIZE // 3
                 if prev_center[0] == curr_center[0]:
                     x = prev_center[0] - thickness // 2
@@ -266,7 +263,7 @@ def draw_board(screen, game_state, snake_colors, mute=False):
                     width = abs(curr_center[0] - prev_center[0])
                     rect = pygame.Rect(x, y, width, thickness)
                 else:
-                    rect = pygame.Rect(segment['x']*CELL_SIZE, flip_y*CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    rect = pygame.Rect(segment['x']*CELL_SIZE, segment['y']*CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(screen, color, rect)
 
 def load_games():
