@@ -316,21 +316,22 @@ def init_visualization(map_size, fps=10, mute=False):
     return screen, clock
 
 
-def visualize_step(game_state_json, snake_colors, screen, clock, fps=10, mute=False):
+def visualize_step(game_state_json, snake_colors, screen, clock, fps=10, mute=False, fast_visualization=False):
     """Handle one frame of training visualization: events, drawing, flip, tick."""
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             return False
     draw_board(screen, game_state_json, snake_colors, mute=mute)
     pygame.display.flip()
-    clock.tick(fps)
+    if not fast_visualization:
+        clock.tick(fps)
     return True
 
 
 def close_visualization():
     pygame.quit()
 
-def wait_for_debug_input_pygame(screen, clock, fps=10):
+def wait_for_debug_input_pygame(screen, clock, fps=10, fast_visualization=False):
     """
     Waits for RIGHT ARROW key press to continue, or Q to quit.
     Keeps the pygame window responsive.
@@ -347,14 +348,20 @@ def wait_for_debug_input_pygame(screen, clock, fps=10):
                 if event.key == pygame.K_RIGHT:
                     waiting = False
                 elif event.key == pygame.K_q:
+                    pygame.quit() # Ensure pygame quits cleanly
                     return False
         if screen:
             pygame.display.flip()
-        if clock:
+        if clock and not fast_visualization:
             clock.tick(fps)
     return True
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Battlesnake Log Visualizer")
+    parser.add_argument("--fast", action="store_true", help="Run visualization without FPS limit (disables clock.tick())")
+    args = parser.parse_args()
+
     pygame.init()
     pygame.key.set_repeat(200, 50)
     font = pygame.font.SysFont("consolas", 18)
@@ -427,7 +434,8 @@ def main():
     clock = pygame.time.Clock()
     
     while running:
-        time_delta = clock.tick(30) / 1000.0
+        if not args.fast:
+            time_delta = clock.tick(30) / 1000.0
         mouse_down_on_slider = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -500,7 +508,8 @@ def main():
                 text_rect = no_games_text.get_rect(center=(win_width // 2, win_height // 2))
                 screen.blit(no_games_text, text_rect)
                 pygame.display.flip()
-                clock.tick(5)
+                if not args.fast:
+                    clock.tick(5)
                 continue
 
         if not games:
@@ -509,7 +518,8 @@ def main():
             text_rect = error_text.get_rect(center=(win_width // 2, win_height // 2))
             screen.blit(error_text, text_rect)
             pygame.display.flip()
-            clock.tick(30)
+            if not args.fast:
+                clock.tick(30)
             continue
 
         if not game_states:
@@ -518,7 +528,8 @@ def main():
             text_rect = no_turns_text.get_rect(center=(win_width // 2, win_height // 2))
             screen.blit(no_turns_text, text_rect)
             pygame.display.flip()
-            clock.tick(30)
+            if not args.fast:
+                clock.tick(30)
             continue
             
         turn_idx = max(0, min(turn_idx, len(game_states) - 1))

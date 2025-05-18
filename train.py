@@ -40,14 +40,15 @@ def train(
     map_size=(11, 11),
     visualize=True,
     save_interval=100,
-    visualize_interval=100,  # <-- new parameter
+    visualize_interval=100,  
     opponent_names=None,
     pretrained=None,
     plot_every=100,
     our_snake_name="Our snake",
-    continue_when_dead=False,  # <-- new flag
-    mute=False,               # <-- new flag
-    debug_mode=False,         # <-- debug mode flag
+    continue_when_dead=False, 
+    mute=False,              
+    debug_mode=False,         
+    fast_visualization=False, 
 ):
     run_dir = get_next_run_dir()
     os.makedirs(run_dir, exist_ok=True)
@@ -89,7 +90,7 @@ def train(
 
     # Visualization setup via visualize.py
     if visualize:
-        screen, clock = init_visualization(map_size, fps=10, mute=mute)
+        screen, clock = init_visualization(map_size, fps=10, mute=mute) # fast_visualization is not directly used by init_visualization itself for ticking
         # Try to use our_snake_name for index 0 in color mapping, fallback to board names
         try:
             snake_colors = {name: SNAKE_COLORS[i % len(SNAKE_COLORS)] for i, name in enumerate(snake_names)}
@@ -97,6 +98,7 @@ def train(
             snake_colors = {s['name']: SNAKE_COLORS[i % len(SNAKE_COLORS)] for i, s in enumerate(env.get_json()['board']['snakes'])}
 
     episode_rewards, episode_lengths, death_reasons = [], [], []
+    episode_apples = []  # new list to record apples eaten (snake length) per episode
     episode_wins_all = [[] for _ in range(num_snakes)]  # win flags for each snake
     obs_raw, _, _, info = env.reset()
     reset_sound_state_tracker()  # Reset sound tracker for first game state
@@ -115,19 +117,28 @@ def train(
                 for ev in pygame.event.get():
                     if ev.type == pygame.QUIT:
                         visualize = False
+                        quit_training_flag = True # Ensure training loop also exits
+                        break
+                if not visualize: # Check again if QUIT event was processed
+                    break
 
             # Debug mode pause before action selection
-            if debug_mode and not quit_training_flag:
+            if debug_mode and not quit_training_flag and visualize: # Added visualize check
                 cont = debug_pause_step(
                     episode_num, step, total_steps,
                     json_obj, observation, obs_tensor,
                     agent, screen, clock, snake_colors,
                     snake_index=YOUR_SNAKE_INDEX,
-                    mute=mute
+                    mute=mute,
+                    fast_visualization=fast_visualization # Pass the flag
                 )
                 if not cont:
                     quit_training_flag = True
+                    visualize = False # Ensure visualization stops if quit from debug
                     break
+            
+            if quit_training_flag: # Break from N_STEPS_COLLECT loop
+                break
 
             current_snake_obj = env.snakes.get_snakes()[YOUR_SNAKE_INDEX]
             action_mask = None
@@ -218,9 +229,14 @@ def train(
             total_steps += 1
 
             if visualize and episode_num % visualize_interval == 0:  # <-- use visualize_interval here
-                cont = visualize_step(env.get_json(), snake_colors, screen, clock, fps=10, mute=mute)
-                if not cont:
-                    visualize = False
+                if screen and clock: # Ensure screen and clock are initialized
+                    cont = visualize_step(env.get_json(), snake_colors, screen, clock, fps=10, mute=mute, fast_visualization=fast_visualization) # Pass the flag
+                    if not cont:
+                        visualize = False
+                        quit_training_flag = True # Ensure training loop also exits
+            
+            if quit_training_flag: # Break from N_STEPS_COLLECT loop
+                break
 
             if game_done:
                 observation = game_state_to_observation(env.reset()[0])
@@ -241,6 +257,8 @@ def train(
                     
                 episode_rewards.append(episode_reward)
                 episode_lengths.append(episode_len)
+                episode_apples.append(info['snake_max_len'][0])  # record apples eaten for solo play
+
                 episode_num += 1
 
                 reason = info['snake_info'].get(0, 'Unknown')
@@ -275,6 +293,7 @@ def train(
                         episode_lengths, 
                         death_reasons,
                         episode_wins_all, 
+                        episode_apples,
                         run_dir,
                         show_plot=False,
                         snake_names=snake_names
@@ -297,7 +316,7 @@ def train(
 
     log_and_plot_training(
         episode_rewards, episode_lengths, death_reasons,
-        episode_wins_all, run_dir,
+        episode_wins_all, episode_apples, run_dir,
         show_plot=False,
         snake_names=snake_names
     )
@@ -335,11 +354,16 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable debug mode: pause each step for our snake and print debug info."
     )
+    parser.add_argument(
+        "--fast-visualization",
+        action="store_true",
+        help="Disable pygame.time.Clock.tick() in visualization for faster rendering."
+    )
     args = parser.parse_args()
     
     if torch.cuda.is_available():
         DEVICE = torch.device("cuda")
-    elif torch.backends.mps.is_available(): # Correct check for MPS
+    elif torch.backends.mps.is_available(): 
         DEVICE = torch.device("mps")
     else:
         DEVICE = torch.device("cpu")
@@ -357,4 +381,5 @@ if __name__ == "__main__":
         continue_when_dead=args.continue_when_dead,
         mute=args.mute,
         debug_mode=args.debug_mode,
+        fast_visualization=args.fast_visualization,
     )

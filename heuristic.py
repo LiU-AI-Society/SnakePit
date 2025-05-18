@@ -33,7 +33,7 @@ def heuristic(matrix):
         ny, nx = head_y + dy, head_x + dx
         if 0 <= ny < height and 0 <= nx < width and matrix[ny, nx, 1] == 1:
             moves[direction] = False
-            break  # Only block the first neck segment found
+            #break   Only block the first neck segment found
 
     valid_moves = [move for move, ok in moves.items() if ok]
 

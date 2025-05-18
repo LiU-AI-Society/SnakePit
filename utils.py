@@ -151,32 +151,22 @@ def log_and_plot_training(
     episode_lengths,
     death_reasons,
     episode_wins_all,  # list of lists, one per snake
+    episode_apples,    # new: apples eaten per episode (final snake length)
     run_dir,
     show_plot=False,
     ma_window=100,
-    snake_names=None      # <-- new param
+    snake_names=None
 ):
-    # Plot configuration first
-    
     import matplotlib.pyplot as plt
     import datetime
-    
     # Create figure with GridSpec to add reward dict
-    fig = plt.figure(figsize=(15, 20))
-    gs = plt.GridSpec(5, 1, height_ratios=[3, 3, 3, 3, 2], figure=fig)
-
-    # First 4 subplots remain the same (using gs instead of subplots)
-    axs = []
-    for i in range(4):
-        axs.append(fig.add_subplot(gs[i]))
-
-    # Add reward dictionary as text panel
-    ax_rewards = fig.add_subplot(gs[4])
+    fig = plt.figure(figsize=(15, 28))  # Increased height for larger plots
+    gs = plt.GridSpec(6, 1, height_ratios=[5, 5, 5, 5, 5, 2], figure=fig)  # Each plot gets more height
+    axs = [fig.add_subplot(gs[i]) for i in range(5)]
+    ax_rewards = fig.add_subplot(gs[5])
     ax_rewards.axis('off')
-
     x = np.arange(len(episode_rewards))
-
-    # Rewards (taller)
+    # Rewards
     axs[0].plot(x, episode_rewards, color='blue', alpha=0.4, linewidth=1, label='Raw Reward')
     if len(episode_rewards) >= ma_window:
         avg_rewards = moving_average(episode_rewards, ma_window)
@@ -192,9 +182,8 @@ def log_and_plot_training(
     axs[0].set_ylabel('Reward')
     axs[0].legend()
     axs[0].grid(True)
-
-    # Lengths (taller)
-    axs[1].plot(x, episode_lengths, color='blue', alpha=0.4, linewidth=1, label='Raw Length')
+    # Lengths (steps per episode)
+    axs[1].plot(x, episode_lengths, color='blue', alpha=0.4, linewidth=1, label='Raw Length (steps)')
     if len(episode_lengths) >= ma_window:
         avg_lengths = moving_average(episode_lengths, ma_window)
         axs[1].plot(
@@ -204,13 +193,12 @@ def log_and_plot_training(
             linewidth=2.5,
             label=f'Mean ({ma_window})'
         )
-    axs[1].set_title('Episode Length')
+    axs[1].set_title('Episode Length (Steps)')
     axs[1].set_xlabel('Episode')
-    axs[1].set_ylabel('Length')
+    axs[1].set_ylabel('Steps')
     axs[1].legend()
     axs[1].grid(True)
-
-    # Death reasons (bar plot)
+    # Death reasons
     if death_reasons:
         from collections import Counter
         reason_counts = Counter(death_reasons)
@@ -221,17 +209,36 @@ def log_and_plot_training(
     else:
         axs[2].set_visible(False)
     axs[2].grid(True, axis='y')
-
+    # Apples eaten (final snake length)
+    if episode_apples:
+        x_apples = np.arange(len(episode_apples))
+        axs[3].plot(x_apples, episode_apples, color='C4', alpha=0.4, linewidth=1, label='Raw Apples Eaten')
+        if len(episode_apples) >= ma_window:
+            avg_apples = moving_average(episode_apples, ma_window)
+            axs[3].plot(
+                np.arange(ma_window-1, len(episode_apples)),
+                avg_apples,
+                color='C4',
+                linewidth=2.5,
+                label=f'Mean ({ma_window})'
+            )
+        mean_apples = np.mean(episode_apples) if episode_apples else 0
+        axs[3].set_title(f'Apples Eaten (Final Length) | Avg: {mean_apples:.2f}')
+        axs[3].set_xlabel('Episode')
+        axs[3].set_ylabel('Apples')
+        axs[3].legend()
+        axs[3].grid(True)
+    else:
+        axs[3].set_visible(False)
     # Win rate for all snakes (only if there are opponents)
     if len(episode_wins_all) > 1:
         colors = ['C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C2']
         for idx, wins in enumerate(episode_wins_all):
             if not wins:
                 continue
-            # use provided name or default
             label = snake_names[idx] if snake_names else ("Agent" if idx == 0 else f"Snake {idx}")
             color = colors[idx % len(colors)]
-            axs[3].plot(
+            axs[4].plot(
                 np.arange(len(wins)),
                 wins,
                 color=color,
@@ -241,7 +248,7 @@ def log_and_plot_training(
             )
             if len(wins) >= ma_window:
                 avg_wins = moving_average(wins, ma_window)
-                axs[3].plot(
+                axs[4].plot(
                     np.arange(ma_window-1, len(wins)),
                     avg_wins,
                     color=color,
@@ -253,26 +260,25 @@ def log_and_plot_training(
                 continue
             win_percentage = 100 * np.mean(wins)
             label = snake_names[idx] if snake_names else ("Agent" if idx == 0 else f"Snake {idx}")
-            axs[3].annotate(
-                f'{label} win: {win_percentage:.1f}%', 
+            axs[4].annotate(
+                f'{label} win: {win_percentage:.1f}%',
                 xy=(0.02, 0.98 - idx*0.05),
                 xycoords='axes fraction',
                 fontsize=9,
                 color=colors[idx % len(colors)]
             )
-        axs[3].set_title('Win Rate')
-        axs[3].set_xlabel('Episode')
-        axs[3].set_ylabel('Win (1=win)')
-        axs[3].grid(True)
+        axs[4].set_title('Win Rate')
+        axs[4].set_xlabel('Episode')
+        axs[4].set_ylabel('Win (1=win)')
+        axs[4].legend(fontsize='small')
+        axs[4].grid(True)
     else:
-        axs[3].set_visible(False)
-
+        axs[4].set_visible(False)
     # Add run title with time started (hh:mm) based on run_dir creation time
     ctime = os.path.getctime(run_dir)
     time_str = datetime.datetime.fromtimestamp(ctime).strftime("%H:%M")
-    fig.suptitle(f"Training Stats: {run_dir} | Started: {time_str}", fontsize=16)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    fig.suptitle(f"Training Stats: {os.path.basename(run_dir)} | Started: {time_str}", fontsize=16)
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.savefig(f"{run_dir}/training_stats.png", bbox_inches='tight')
     if show_plot:
         plt.show()
@@ -582,11 +588,22 @@ def load_model(model_path="models/dqn_final.pt", map_size=(11, 11), channels=3):
         return False
     
 def load_model_onnx(model_path=MODEL_PATH):
-    """Load the ONNX model for inference"""
+    """Load the ONNX model for inference with GPU support if available"""
     global MODEL_SESSION
+    # select execution providers: prefer CUDA, then MPS, else CPU
+    providers = []
+    if torch.cuda.is_available():
+        providers.append('CUDAExecutionProvider')
+    elif getattr(torch.backends, 'mps', None) and torch.backends.mps.is_available():
+        providers.append('MPSExecutionProvider')
+    else:
+        providers.append('CPUExecutionProvider')
+
     try:
-        MODEL_SESSION = ort.InferenceSession(model_path)
-        print(f"Successfully loaded ONNX model from {model_path}")
+        # create session with preferred providers
+        session = ort.InferenceSession(model_path, providers=providers)
+        MODEL_SESSION = session
+        print(f"Successfully loaded ONNX model from {model_path} using {providers}")
         return True, MODEL_SESSION
     except Exception as e:
         print(f"Error loading ONNX model: {e}")
@@ -742,7 +759,8 @@ def debug_pause_step(
     clock,
     snake_colors,
     snake_index=0,
-    mute=False
+    mute=False,
+    fast_visualization=False # Add fast_visualization flag
 ):
     """
     Pause training for debugging: visualize and print debugging info until RIGHT arrow press or Q quits.
@@ -789,7 +807,7 @@ def debug_pause_step(
     print(f"Agent Policy Probabilities: {probs_str}")
     print("=" * 60)
     # Wait for user to continue or quit
-    cont = wait_for_debug_input_pygame(screen, clock, fps=10)
+    cont = wait_for_debug_input_pygame(screen, clock, fps=10, fast_visualization=fast_visualization) # Pass the flag
     return cont
 
 
