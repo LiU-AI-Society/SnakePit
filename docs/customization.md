@@ -10,18 +10,18 @@ The reward system defines how your snake evaluates its actions. The default rewa
 
 ```python
 self.reward_dict = {
-    "another_turn": +0.01,     # Small reward for surviving each turn
-    "ate_food": 1,             # Reward for eating food
-    "won": 10,                 # Large reward for winning the game
-    "died": -1,                # Penalty for dying
-    "ate_another_snake": 5,    # Big reward for eating other snakes
-    "hit_wall": -10,           # Severe penalty for wall collision
-    "hit_other_snake": 0,      # Neutral for hitting other snake
-    "hit_self": -1,            # Penalty for self-collision
-    "was_eaten": -1,           # Penalty for being eaten
-    "other_snake_hit_body": -1,# Penalty when others hit your body
-    "forbidden_move": -1,      # Penalty for invalid moves (hitting neck)
-    "starved": -1              # Penalty for dying from starvation
+    "another_turn": 0,   
+    "ate_food": 0,  
+    "won": 0,                 
+    "died": 0,
+    "ate_another_snake": 0, 
+    "hit_wall": 0,           
+    "hit_other_snake": 0,    
+    "hit_self": 0,     
+    "was_eaten": 0, 
+    "other_snake_hit_body": 0,
+    "forbidden_move": 0,     
+    "starved": 0              
 }
 ```
 
@@ -47,34 +47,8 @@ self.reward_dict = {
 
 ### Example Modifications
 
-For an aggressive snake:
-```python
-self.reward_dict.update({
-    "ate_another_snake": 10,    # Double reward for eliminations
-    "hit_other_snake": 0.5,     # Small reward for aggressive moves
-    "was_eaten": -2             # Higher penalty for being eliminated
-})
-```
+For an aggressive snake you might want to reward eating other snakes etc. Come up with the combination that you think will win the game!
 
-For a cautious snake:
-```python
-self.reward_dict.update({
-    "another_turn": 0.05,       # Higher survival reward
-    "ate_food": 2,              # Focus on food gathering
-    "ate_another_snake": 3,     # Reduced combat reward
-    "hit_other_snake": -0.5     # Discourage risky encounters
-})
-```
-
-For a balanced snake:
-```python
-self.reward_dict.update({
-    "another_turn": 0.02,       # Moderate survival reward
-    "ate_food": 1.5,            # Slightly increased food reward
-    "ate_another_snake": 5,     # Keep original combat reward
-    "hit_wall": -15             # Stronger wall avoidance
-})
-```
 
 Modify these values to shape your snake's behavior, then test different combinations in training to find the optimal strategy for your goals.
 
@@ -87,8 +61,7 @@ def choose_action(observation, info):
     return random.choice([0, 1, 2, 3])  # UP, DOWN, LEFT, RIGHT
 ```
 
-Do so by adding a new file with the name of the snake you want and make sure the file contains the choose action function. Then when training use the --opponents flag to include those snakes you have designed. Add new opponents to folder "snakes".
-
+Create new snakes in the snakes directory with the same structure as random_snake.py. Modify the choose_action function to your wishes.
 ```bash
 python train.py --opponents hungry_snake
 ```

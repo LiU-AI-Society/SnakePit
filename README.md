@@ -113,10 +113,10 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 
 ```
 .
-├── train_snake.py         # Training loop
-├── main_with_model.py     # Server for playing
+├── train.py         # Training loop
+├── main.py     # Server for playing
 ├── Gym/                   # Battlesnake gym
-├── models.py              # Your model (EasyNet)
+├── ppo.py                 #  PPO model 
 ├── visualize.py           # Pygame GUI drawing
 ├── snakes/                # Opponent agents
 ├── runs/                  # Saved runs + plots
@@ -127,7 +127,7 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 
 ## 🏆 Competition Format
 
-- You can train locally and then run the model using main_with_model.py script.
+- You can train locally and then run the model using main.py script.
 - You will compete against other snakes
 
 ---
