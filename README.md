@@ -6,6 +6,8 @@ Welcome to the **Snake Pit** — a fun and educational event where you train you
 This project uses a custom Battlesnake Gym environment and supports PPO. It's built for students and ML enthusiasts to compete by evolving their snakes using machine learning.
 
 ---
+![Environment Visualization](docs/images/snakes.gif)
+
 
 
 ## 📦 Requirements
@@ -127,7 +129,7 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 
 ## 🏆 Competition Format
 
-- Competition will be performed 
+- Competition will be performed in 
 - You can train locally and then run the model using main.py script.
 - You will compete against other snakes
 
