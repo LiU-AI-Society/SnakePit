@@ -10,12 +10,12 @@ from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
 
 from Gym.snake_gym import BattlesnakeGym
-from visualize import init_visualization, visualize_step, close_visualization, reset_sound_state_tracker, SNAKE_COLORS, wait_for_debug_input_pygame
+from visualize import init_visualization, visualize_step, close_visualization, reset_sound_state_tracker, SNAKE_COLORS
 from ppo import PPOAgent, PPOMemory, ActorCritic  # from your PPO module
 from utils import get_next_run_dir, game_state_to_observation, load_opponent_modules, get_valid_actions
 from utils import moving_average, plot_training_stats_live, plot_death_reasons, battle_snake_game_state_to_observation, game_state_to_matrix
 from heuristic import heuristic
-from utils import log_and_plot_training, determine_winner, plot_hyperparameters_and_rewards  # <-- import the new function
+from utils import log_and_plot_training, determine_winner, plot_hyperparameters_and_rewards, debug_pause_step
 from Gym.rewards import SimpleRewards
 
 
@@ -118,31 +118,13 @@ def train(
 
             # Debug mode pause before action selection
             if debug_mode and not quit_training_flag:
-                # Separator for clarity
-                print("\n" + "=" * 60)
-                print(f"DEBUG STEP | Episode: {episode_num} | BatchStep: {step} | TotalSteps: {total_steps}")
-                print("-" * 60)
-                # Visualize current state
-                visualize_step(json_obj, snake_colors, screen, clock, fps=10, mute=mute)
-                # Heuristic analysis
-                h_valid, h_moves, h_mask = heuristic(observation)
-                print("Heuristic Analysis:")
-                print(f"  Valid Moves: {h_valid}")
-                print(f"  Mask Blocks (True=blocked): {h_mask.tolist()}")
-                # Game rules valid actions
-                gr_valid = get_valid_actions(json_obj['board'], YOUR_SNAKE_INDEX)
-                print("Game Rules Valid Actions:")
-                print(f"  {gr_valid}")
-                # Agent policy probabilities
-                with torch.no_grad():
-                    logits, _ = agent.actor_critic(obs_tensor.to(agent.device))
-                    probs = torch.softmax(logits, dim=-1).squeeze().cpu().numpy()
-                action_names = ["UP", "DOWN", "LEFT", "RIGHT"]
-                probs_str = ", ".join(f"{action_names[i]}={p:.3f}" for i, p in enumerate(probs))
-                print(f"Agent Policy Probabilities: {probs_str}")
-                print("=" * 60)
-                # Wait for user to continue or quit
-                cont = wait_for_debug_input_pygame(screen, clock, fps=10)
+                cont = debug_pause_step(
+                    episode_num, step, total_steps,
+                    json_obj, observation, obs_tensor,
+                    agent, screen, clock, snake_colors,
+                    snake_index=YOUR_SNAKE_INDEX,
+                    mute=mute
+                )
                 if not cont:
                     quit_training_flag = True
                     break

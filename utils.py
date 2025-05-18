@@ -7,6 +7,8 @@ from collections import defaultdict, Counter
 import onnxruntime as ort
 import torch
 from scipy.signal.windows import gaussian  # fixed import
+from visualize import visualize_step, wait_for_debug_input_pygame  # for debug visualization
+from heuristic import heuristic  # for heuristic analysis
 
 
 MODEL_SESSION = None
@@ -727,5 +729,67 @@ def determine_winner(info, num_snakes, our_snake_name):
         else:
             winner = "Unknown winner (multiple alive)"
     return win_flags, winner
+
+def debug_pause_step(
+    episode_num,
+    batch_step,
+    total_steps,
+    json_obj,
+    observation,
+    obs_tensor,
+    agent,
+    screen,
+    clock,
+    snake_colors,
+    snake_index=0,
+    mute=False
+):
+    """
+    Pause training for debugging: visualize and print debugging info until RIGHT arrow press or Q quits.
+    Returns False if user quits, True to continue.
+    """
+    # Separator for clarity
+    print("\n" + "=" * 60)
+    print(f"DEBUG STEP | Episode: {episode_num} | BatchStep: {batch_step} | TotalSteps: {total_steps}")
+    print("-" * 60)
+    # Visualize current state
+    visualize_step(json_obj, snake_colors, screen, clock, fps=10, mute=mute)
+    # Print observation matrix channels side-by-side
+    try:
+        print("Observation matrix (channels side-by-side):")
+        rows, cols, channels = observation.shape
+        # Header row with channel labels
+        header = '   '.join(f"Ch{ch}".center(cols*3) for ch in range(channels))
+        print(header)
+        # Print each row across channels
+        for i in range(rows):
+            row_segments = []
+            for ch in range(channels):
+                # Format each value as 2-digit int
+                vals = [f"{int(v):2d}" for v in observation[i, :, ch]]
+                row_segments.append(' '.join(vals))
+            print(' | '.join(row_segments))
+    except Exception as e:
+        print(f"Warning: could not print observation matrix: {e}")
+    # Heuristic analysis
+    h_valid, _, h_mask = heuristic(observation)
+    print("Heuristic Analysis:")
+    print(f"  Valid Moves: {h_valid}")
+    print(f"  Mask Blocks (True=blocked): {h_mask.tolist()}")
+    # Game rules valid actions
+    gr_valid = get_valid_actions(json_obj['board'], snake_index)
+    print("Game Rules Valid Actions:")
+    print(f"  {gr_valid}")
+    # Agent policy probabilities
+    with torch.no_grad():
+        logits, _ = agent.actor_critic(obs_tensor.to(agent.device))
+        probs = torch.softmax(logits, dim=-1).squeeze().cpu().numpy()
+    action_names = ["UP", "DOWN", "LEFT", "RIGHT"]
+    probs_str = ", ".join(f"{action_names[i]}={p:.3f}" for i, p in enumerate(probs))
+    print(f"Agent Policy Probabilities: {probs_str}")
+    print("=" * 60)
+    # Wait for user to continue or quit
+    cont = wait_for_debug_input_pygame(screen, clock, fps=10)
+    return cont
 
 
