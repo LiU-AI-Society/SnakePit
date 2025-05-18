@@ -72,6 +72,9 @@ Available options:
 
 #### 2. Launch a game
 
+Head over to [Create Game](https://play.battlesnake.com/account/games/create)
+
+
 ![battle](docs/images/game.png)
 
 ##  How to make your snake better!!!
