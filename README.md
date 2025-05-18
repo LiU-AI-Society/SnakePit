@@ -127,6 +127,7 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 
 ## 🏆 Competition Format
 
+- Competition will be performed 
 - You can train locally and then run the model using main.py script.
 - You will compete against other snakes
 
