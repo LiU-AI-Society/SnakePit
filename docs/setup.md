@@ -39,10 +39,17 @@ curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 ## 📦 Step 2: Create ngrok account and follow instructions for installation
 Go to [https://dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup), and setup your account.
 
-## 📦 Step 3: Click the static domain and claim free static domain
+
+## 📦 Step 3: Configure and deploy ngrok
+Copy the authtoken found on the dashboard after creating an account in the previous step. Configure your ngrok with the following command.
+```bash
+ngrok config add-authtoken <token>
+```
+
+## 📦 Step 4: Click the static domain and claim free static domain
 ![static_domain](images/static_domain.png)
 
-## 📦 Step 4: Paste the command in to your terminal. The last digits are which ports the ngrok server listens to. We have it to default at 8080 so, change it 8080
+## 📦 Step 5: Paste the command in to your terminal. The last digits are which ports the ngrok server listens to. We have it to default at 8080 so, change it 8080
 
 
 
