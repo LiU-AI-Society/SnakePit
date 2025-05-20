@@ -8,13 +8,41 @@ Follow these steps to use [ngrok](https://ngrok.com) to expose a local server to
 - Python, Node.js, or any other server running locally (e.g., `localhost:5000`)
 - ngrok installed (instructions below)
 
-## 📦 Step 1: Create ngrok account and follow instructions for installation
+- ## 📦 Step 1: Install ngrok
+
+### Option 1: Download from Website
+
+Go to [https://ngrok.com/download](https://ngrok.com/download), download the binary, and unzip it.
+
+### Option 2: Install via Homebrew (macOS)
+
+```bash
+brew install ngrok/ngrok/ngrok
+```
+
+### Option 3: Install via Chocolatey (Windows)
+
+```bash
+choco install ngrok
+```
+
+### Option 4: Install via Apt (Linux)
+```bash
+curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+  && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+  | sudo tee /etc/apt/sources.list.d/ngrok.list \
+  && sudo apt update \
+  && sudo apt install ngrok
+```
+
+## 📦 Step 2: Create ngrok account and follow instructions for installation
 Go to [https://dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup), and setup your account.
 
-## 📦 Step 2: Click the static domain and claim free static domain
+## 📦 Step 3: Click the static domain and claim free static domain
 ![static_domain](images/static_domain.png)
 
-## 📦 Step 3: Paste the command in to your terminal. The last digits are which ports the ngrok server listens to. We have it to default at 8080 so, change it 8080
+## 📦 Step 4: Paste the command in to your terminal. The last digits are which ports the ngrok server listens to. We have it to default at 8080 so, change it 8080
 
 
 
