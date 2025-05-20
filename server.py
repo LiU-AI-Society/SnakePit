@@ -3,7 +3,6 @@ import os
 import typing
 import json
 from flask import Flask, request
-from pyngrok import ngrok  # Import retained for optional ngrok usage
 from datetime import datetime
 
 GAME_ID_MAP = {}
@@ -76,10 +75,7 @@ def run_server(handlers: typing.Dict, use_ngrok=False):
 
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-    if use_ngrok:
-        public_url = ngrok.connect(port)
-        print(f"\nPublic URL: {public_url}")
-    else:
-        print(f"\nRunning Battlesnake at http://{host}:{port}")
+   
+    print(f"\nRunning Battlesnake at http://{host}:{port}")
 
     app.run(host=host, port=port)
