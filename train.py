@@ -354,9 +354,10 @@ if __name__ == "__main__":
         help="Enable debug mode: pause each step for our snake and print debug info."
     )
     parser.add_argument(
-        "--slow-visualization",
-        action="store_true",
-        help="Use normal (slower) visualization speed instead of fast visualization (default is fast)."
+        "--visualization-fps",
+        type=int,
+        default=60, # Default to fast visualization
+        help="Frames per second for visualization. Set lower for slower visualization (e.g., 5)."
     )
     args = parser.parse_args()
     
@@ -380,5 +381,5 @@ if __name__ == "__main__":
         continue_when_dead=args.continue_when_dead,
         mute=args.mute,
         debug_mode=args.debug_mode,
-        visualization_fps=60 if not args.slow_visualization else 5,  # MODIFIED
+        visualization_fps=args.visualization_fps,
     )

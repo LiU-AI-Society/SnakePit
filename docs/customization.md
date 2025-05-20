@@ -163,9 +163,10 @@ def advanced_heuristic(matrix, critic_value=None):
     return valid_moves, moves, action_mask
 ```
 
-2. Replace the standard heuristic in `train.py` and `main.py`:
+2. Replace the standard heuristic in `train.py` and `launch.py`:
+
 ```python
-# In train.py and main.py, update the heuristic import
+# In train.py and launch.py, update the heuristic import
 from heuristic import advanced_heuristic as heuristic
 ```
 

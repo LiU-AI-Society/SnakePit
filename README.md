@@ -63,7 +63,7 @@ python train.py --episodes 1000 --visualize-interval 10
 #### 1. Launch Server
 Start the Flask server with your trained model (found under runs/runXX/ppo_epxx.onnx), e.g:
 ```bash
-python main.py --model runs/run1/ppo_final.onnx 
+python launch.py --model runs/run1/ppo_final.onnx 
 ```
 
 Available options:
@@ -115,7 +115,7 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 ```
 .
 ├── train.py         # Training loop
-├── main.py     # Server for playing
+├── launch.py     # Server for playing
 ├── Gym/                   # Battlesnake gym
 ├── ppo.py                 #  PPO model 
 ├── visualize.py           # Pygame GUI drawing
@@ -130,7 +130,7 @@ The observation is a 3-channel 2D grid of shape `(height, width, 3)`, where each
 
 - Competition will be performed in Group stage and bracket stage
 - Played 11x11 format
-- You can train locally and then run the model using main.py script.
+- You can train locally and then run the model using launch.py script.
 - You will compete against other snakes
 
 ---

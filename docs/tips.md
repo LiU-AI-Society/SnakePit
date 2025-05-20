@@ -128,7 +128,7 @@ python evaluate.py --model-1 runs/run01/ppo_final.pt --model-2 runs/run02/ppo_fi
    python convert_to_onnx.py --model runs/best_run/ppo_final.pt
    
    # Test server locally
-   python main.py --model runs/best_run/final.onnx
+   python launch.py --model runs/best_run/final.onnx
    ```
 
 3. **Final Checks**
