@@ -38,7 +38,7 @@ python train.py [options]
 
 Available options:
 ```bash
---episodes INT             # Number of training episodes (default: 500)
+--total-timesteps INT             # Number of training episodes (default: 500)
 --map-size INT INT        # Board dimensions (default: 11 11)
 --save-interval INT       # Save model every n episodes (default: 500)
 --visualize-interval INT  # How often to show visualization (default: 10)
