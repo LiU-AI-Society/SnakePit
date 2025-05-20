@@ -333,7 +333,7 @@ if __name__ == "__main__":
     parser.add_argument("--map-size", type=int, nargs=2, default=[11, 11])
     parser.add_argument("--no-visualize", action="store_true")
     parser.add_argument("--save-interval", type=int, default=500)
-    parser.add_argument("--visualize-interval", type=int, default=100, help="How often to visualize the game (episodes)")
+    parser.add_argument("--visualize-interval", type=int, default=1, help="How often to visualize the game (episodes)")
     parser.add_argument("--pretrained", type=str, default=None)
     parser.add_argument("--opponents", type=str, nargs="+", default=[])
     parser.add_argument("--plot-every", type=int, default=100, help="How often to plot training stats (episodes)")
