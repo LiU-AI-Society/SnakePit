@@ -316,22 +316,22 @@ def init_visualization(map_size, fps=10, mute=False):
     return screen, clock
 
 
-def visualize_step(game_state_json, snake_colors, screen, clock, fps=10, mute=False, fast_visualization=False):
+def visualize_step(game_state_json, snake_colors, screen, clock, mute=False, visualization_fps_value=10):
     """Handle one frame of training visualization: events, drawing, flip, tick."""
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             return False
     draw_board(screen, game_state_json, snake_colors, mute=mute)
     pygame.display.flip()
-    if not fast_visualization:
-        clock.tick(fps)
+    if visualization_fps_value > 0:
+        clock.tick(visualization_fps_value)
     return True
 
 
 def close_visualization():
     pygame.quit()
 
-def wait_for_debug_input_pygame(screen, clock, fps=10, fast_visualization=False):
+def wait_for_debug_input_pygame(screen, clock, visualization_fps_value=10):
     """
     Waits for RIGHT ARROW key press to continue, or Q to quit.
     Keeps the pygame window responsive.
@@ -352,8 +352,8 @@ def wait_for_debug_input_pygame(screen, clock, fps=10, fast_visualization=False)
                     return False
         if screen:
             pygame.display.flip()
-        if clock and not fast_visualization:
-            clock.tick(fps)
+        if clock and visualization_fps_value > 0:
+            clock.tick(visualization_fps_value)
     return True
 
 def main():
