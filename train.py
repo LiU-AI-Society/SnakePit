@@ -20,18 +20,18 @@ from Gym.rewards import SimpleRewards
 
 
 # ---- Config ----
-TOTAL_TIMESTEPS = 1000_000
-SAVE_INTERVAL = 1000
-N_STEPS_COLLECT = 2000 
-PPO_BATCH_SIZE = 64
-N_EPOCHS_PPO = 4
-LR = 3e-4
-GAMMA = 0.99
-GAE_LAMBDA = 0.95
-PPO_CLIP = 0.2
+TOTAL_TIMESTEPS = 1000_000_000     # Total environment steps to train for (outer loop limit)
+SAVE_INTERVAL = 1000            # How often (episodes) to save model checkpoints
+N_STEPS_COLLECT = 2000      # How many steps to collect before each PPO update (batch size for memory buffer)
+PPO_BATCH_SIZE = 64             # Minibatch size for PPO update (used inside PPOAgent.learn)
+N_EPOCHS_PPO = 4                # Number of epochs to iterate over the collected batch in each PPO update
+LR = 3e-4                       # Learning rate for optimizer
+GAMMA = 0.995                    # Discount factor for future rewards
+GAE_LAMBDA = 0.95               # Lambda for Generalized Advantage Estimation (GAE)
+PPO_CLIP = 0.2                  # PPO clipping parameter (epsilon)
 
 YOUR_SNAKE_INDEX = 0
-OBS_TYPE = "flat-51s"
+OBS_TYPE = "flat-51s"           # Observation type for the environment 5s for head and 1s for body
 MAP_SIZE = (11, 11)
 
 
@@ -48,7 +48,7 @@ def train(
     continue_when_dead=False, 
     mute=False,              
     debug_mode=False,         
-    fast_visualization=False, 
+    fast_visualization=True,  # Changed default to True
 ):
     run_dir = get_next_run_dir()
     os.makedirs(run_dir, exist_ok=True)
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     parser.add_argument("--map-size", type=int, nargs=2, default=[11, 11])
     parser.add_argument("--no-visualize", action="store_true")
     parser.add_argument("--save-interval", type=int, default=500)
-    parser.add_argument("--visualize-interval", type=int, default=100, help="How often to visualize the game (episodes)")  # <-- new argument
+    parser.add_argument("--visualize-interval", type=int, default=100, help="How often to visualize the game (episodes)")
     parser.add_argument("--pretrained", type=str, default=None)
     parser.add_argument("--opponents", type=str, nargs="+", default=[])
     parser.add_argument("--plot-every", type=int, default=100, help="How often to plot training stats (episodes)")
@@ -355,9 +355,9 @@ if __name__ == "__main__":
         help="Enable debug mode: pause each step for our snake and print debug info."
     )
     parser.add_argument(
-        "--fast-visualization",
+        "--slow-visualization",
         action="store_true",
-        help="Disable pygame.time.Clock.tick() in visualization for faster rendering."
+        help="Use normal (slower) visualization speed instead of fast visualization (default is fast)."
     )
     args = parser.parse_args()
     
@@ -381,5 +381,5 @@ if __name__ == "__main__":
         continue_when_dead=args.continue_when_dead,
         mute=args.mute,
         debug_mode=args.debug_mode,
-        fast_visualization=args.fast_visualization,
+        fast_visualization=not args.slow_visualization,  # Invert the flag
     )
