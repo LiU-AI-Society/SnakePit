@@ -36,7 +36,7 @@ MAP_SIZE = (11, 11)
 
 
 def train(
-    episodes=500,
+    total_timesteps=TOTAL_TIMESTEPS,  # Replace episodes with total_timesteps
     map_size=(11, 11),
     visualize=True,
     save_interval=100,
@@ -110,7 +110,7 @@ def train(
     json_obj = env.get_json()
     quit_training_flag = False
 
-    while total_steps < TOTAL_TIMESTEPS and not quit_training_flag:
+    while total_steps < total_timesteps and not quit_training_flag:  # Use total_timesteps here
         for step in range(N_STEPS_COLLECT):
             # Handle pygame
             if visualize:
@@ -330,7 +330,7 @@ def train(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--episodes", type=int, default=500)
+    parser.add_argument("--total-timesteps", type=int, default=TOTAL_TIMESTEPS, help="Total environment steps to train for")
     parser.add_argument("--map-size", type=int, nargs=2, default=[11, 11])
     parser.add_argument("--no-visualize", action="store_true")
     parser.add_argument("--save-interval", type=int, default=500)
@@ -369,7 +369,7 @@ if __name__ == "__main__":
         DEVICE = torch.device("cpu")
     print(f"Using device: {DEVICE}")
     train(
-        episodes=args.episodes,
+        total_timesteps=args.total_timesteps,  # Pass total_timesteps instead of episodes
         map_size=tuple(args.map_size),
         visualize=not args.no_visualize,
         save_interval=args.save_interval,
