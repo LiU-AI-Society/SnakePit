@@ -18,15 +18,6 @@ def heuristic(matrix):
 
     head_y, head_x = head_pos[0]
 
-    # Wall collisions
-    if head_y == 0:
-        moves["up"] = False
-    if head_y == height - 1:
-        moves["down"] = False
-    if head_x == 0:
-        moves["left"] = False
-    if head_x == width - 1:
-        moves["right"] = False
 
     # Neck detection (look for adjacent segment with value 1 in channel 1)
     for dy, dx, direction in [(-1, 0, "up"), (1, 0, "down"), (0, -1, "left"), (0, 1, "right")]:

@@ -9,4 +9,4 @@ onnxruntime==1.22.0
 matplotlib==3.10.3
 pandas==2.2.3
 wandb==0.19.11
-scypi==1.15.3
+scipy==1.15.3
