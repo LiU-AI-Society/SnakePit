@@ -48,8 +48,7 @@ def train(
     continue_when_dead=False, 
     mute=False,              
     debug_mode=False,         
-    fast_visualization=True,  # Changed default to True
-):
+    visualization_fps=10):  # MODIFIED
     run_dir = get_next_run_dir()
     os.makedirs(run_dir, exist_ok=True)
     if debug_mode:
@@ -90,7 +89,7 @@ def train(
 
     # Visualization setup via visualize.py
     if visualize:
-        screen, clock = init_visualization(map_size, fps=10, mute=mute) # fast_visualization is not directly used by init_visualization itself for ticking
+        screen, clock = init_visualization(map_size, fps=visualization_fps, mute=mute)  # MODIFIED
         # Try to use our_snake_name for index 0 in color mapping, fallback to board names
         try:
             snake_colors = {name: SNAKE_COLORS[i % len(SNAKE_COLORS)] for i, name in enumerate(snake_names)}
@@ -130,7 +129,7 @@ def train(
                     agent, screen, clock, snake_colors,
                     snake_index=YOUR_SNAKE_INDEX,
                     mute=mute,
-                    fast_visualization=fast_visualization # Pass the flag
+                    visualization_fps=visualization_fps  # MODIFIED
                 )
                 if not cont:
                     quit_training_flag = True
@@ -230,7 +229,7 @@ def train(
 
             if visualize and episode_num % visualize_interval == 0:  # <-- use visualize_interval here
                 if screen and clock: # Ensure screen and clock are initialized
-                    cont = visualize_step(env.get_json(), snake_colors, screen, clock, fps=10, mute=mute, fast_visualization=fast_visualization) # Pass the flag
+                    cont = visualize_step(env.get_json(), snake_colors, screen, clock, mute=mute, visualization_fps_value=visualization_fps)  # MODIFIED
                     if not cont:
                         visualize = False
                         quit_training_flag = True # Ensure training loop also exits
@@ -381,5 +380,5 @@ if __name__ == "__main__":
         continue_when_dead=args.continue_when_dead,
         mute=args.mute,
         debug_mode=args.debug_mode,
-        fast_visualization=not args.slow_visualization,  # Invert the flag
+        visualization_fps=60 if not args.slow_visualization else 5,  # MODIFIED
     )
