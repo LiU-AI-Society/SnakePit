@@ -356,7 +356,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--visualization-fps",
         type=int,
-        default=60, # Default to fast visualization
+        default=40, # Default to fast visualization
         help="Frames per second for visualization. Set lower for slower visualization (e.g., 5)."
     )
     args = parser.parse_args()

@@ -7,13 +7,11 @@ from heuristic import heuristic
 
 # Global cache for loaded models to avoid reloading
 LOADED_MODELS = {}
-DEFAULT_MODEL_NAME = "right_side_snake.onnx" # Default model filename
-DEFAULT_MODEL_DIR = "good_models/right_side_snake" # Default model directory
+DEFAULT_MODEL_PATH = "good_snakes/bad_snake/ppo_ep1.onnx"  # Relative path to default model
 
 def get_default_model_path():
-    # Construct path relative to the workspace root or a known base directory
-    # This assumes Krigsormar is the workspace root.
-    return os.path.join(os.getcwd(), DEFAULT_MODEL_DIR, DEFAULT_MODEL_NAME)
+    # Return the default model path as is (relative to current working directory)
+    return os.path.join(os.getcwd(), DEFAULT_MODEL_PATH)
 
 def load_onnx_model_for_opponent(model_path):
     if model_path in LOADED_MODELS:
@@ -86,7 +84,6 @@ def get_model_opponent_action_function(model_path):
             return None, "model_snake_default_not_found" # Return None and a name indicating failure
         display_name = os.path.splitext(os.path.basename(actual_model_path))[0] # e.g., "right_side_snake"
         print(f"Using default model for 'model_snake': {actual_model_path}")
-
 
     opponent = ModelOpponent(actual_model_path)
     if not opponent.session: 
